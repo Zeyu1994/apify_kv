@@ -19,7 +19,7 @@ class ApifyKVStoreWidget(BaseWidget):
     class InputsSchema(BaseWidget.InputsSchema):
         operation: str = Field("download", description="操作类型 (upload/download)")
         store_name: str = Field("default-store", description="KV存储名称")
-        value: Optional[dict] = Field(None, description="上传时的值（JSON对象）")
+        value: Optional[str] = Field(None, description="上传时的值（字符串）")
         max_items: int = Field(10, description="下载时返回的最大项目数")
         
     class OutputsSchema(BaseWidget.OutputsSchema):
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     upload_config = {
         "operation": "upload",
         "store_name": "test-store",
-        "value": {"test": "data", "time": "now"},
+        "value": "这是一个测试字符串",
         "max_items": 10
     }
     
