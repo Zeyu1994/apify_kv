@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+import datetime
 from pydantic import Field
 from typing import Dict, List, Any, Optional
 
@@ -25,7 +26,8 @@ class ApifyKVStoreWidget(BaseWidget):
     class OutputsSchema(BaseWidget.OutputsSchema):
         success: bool = Field(description="操作是否成功")
         message: str = Field(description="状态消息")
-        data: Optional[Dict[str, Any]] = Field(None, description="下载的数据")
+        data: Optional[List[Any]] = Field(None, description="下载的数据列表，最新的在前")
+        dates: Optional[List[str]] = Field(None, description="数据对应的日期时间列表，与data列表顺序一致")
     
     def execute(self, environ, config):
         """
@@ -47,7 +49,8 @@ class ApifyKVStoreWidget(BaseWidget):
                 return {
                     "success": False,
                     "message": "缺少APIFY_API_KEY环境变量，请设置后再试",
-                    "data": None
+                    "data": None,
+                    "dates": None
                 }
             
             # 创建Apify客户端
@@ -63,11 +66,13 @@ class ApifyKVStoreWidget(BaseWidget):
                     return {
                         "success": False,
                         "message": "上传操作需要提供值",
-                        "data": None
+                        "data": None,
+                        "dates": None
                     }
                 
                 # 使用当前时间戳作为键
                 timestamp = str(int(time.time()))
+                current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
                 # 存储值
                 client.key_value_store(store_id).set_record(timestamp, config.value)
@@ -75,7 +80,8 @@ class ApifyKVStoreWidget(BaseWidget):
                 return {
                     "success": True,
                     "message": f"成功上传数据，键为 {timestamp}",
-                    "data": {timestamp: config.value}
+                    "data": [config.value],
+                    "dates": [current_date]
                 }
                 
             elif config.operation.lower() == "download":
@@ -88,24 +94,33 @@ class ApifyKVStoreWidget(BaseWidget):
                 
                 # 获取最新的n个记录
                 latest_keys = keys[:config.max_items]
-                result_data = {}
+                values_list = []
+                dates_list = []
                 
                 for key in latest_keys:
                     record = client.key_value_store(store_id).get_record(key)
                     if record and "value" in record:
-                        result_data[key] = record["value"]
+                        values_list.append(record["value"])
+                        # 将时间戳转换为日期时间
+                        try:
+                            dt = datetime.datetime.fromtimestamp(int(key))
+                            dates_list.append(dt.strftime("%Y-%m-%d %H:%M:%S"))
+                        except (ValueError, TypeError):
+                            dates_list.append("未知日期")
                 
                 return {
                     "success": True,
-                    "message": f"成功获取最新的 {len(result_data)} 条记录",
-                    "data": result_data
+                    "message": f"成功获取最新的 {len(values_list)} 条记录",
+                    "data": values_list,
+                    "dates": dates_list
                 }
                 
             else:
                 return {
                     "success": False,
                     "message": f"不支持的操作类型: {config.operation}",
-                    "data": None
+                    "data": None,
+                    "dates": None
                 }
                 
         except Exception as e:
@@ -114,7 +129,8 @@ class ApifyKVStoreWidget(BaseWidget):
             return {
                 "success": False,
                 "message": f"操作失败: {repr(e)}",
-                "data": None
+                "data": None,
+                "dates": None
             }
 
 
@@ -145,13 +161,12 @@ if __name__ == "__main__":
     
     download_result = widget({}, download_config)
     print("下载结果:", download_result)
-    import datetime
-    # 将时间戳转换回日期时间并打印
+    
+    # 打印数据和对应日期
     if download_result["success"] and download_result["data"]:
-        print("\n时间戳转换:")
-        for timestamp, value in download_result["data"].items():
-            dt = datetime.datetime.fromtimestamp(int(timestamp))  # 直接转换秒级时间戳
-            formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S")
-            print(f"时间戳 {timestamp} = {formatted_time}")
+        print("\n数据和日期:")
+        for i, (value, date) in enumerate(zip(download_result["data"], download_result["dates"])):
+            print(f"位置 {i}:")
             print(f"数据: {value}")
+            print(f"日期: {date}")
             print("-" * 30)
