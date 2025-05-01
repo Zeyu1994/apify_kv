@@ -26,7 +26,7 @@ class ApifyKVStoreWidget(BaseWidget):
     class OutputsSchema(BaseWidget.OutputsSchema):
         success: bool = Field(description="操作是否成功")
         message: str = Field(description="状态消息")
-        data: List[Any] = Field([], description="下载的数据列表，最新的在前")
+        data: List[str] = Field([], description="下载的数据列表，最新的在前")
         dates: List[str] = Field([], description="数据对应的日期时间列表，与data列表顺序一致")
     
     def execute(self, environ, config):
