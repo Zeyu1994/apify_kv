@@ -20,14 +20,14 @@ class ApifyKVStoreWidget(BaseWidget):
     class InputsSchema(BaseWidget.InputsSchema):
         operation: str = Field("download", description="操作类型 (upload/download)")
         store_name: str = Field("default-store", description="KV存储名称")
-        value: Optional[str] = Field(None, description="上传时的值（字符串）")
+        value: str = Field(None, description="上传时的值（字符串）")
         max_items: int = Field(10, description="下载时返回的最大项目数")
         
     class OutputsSchema(BaseWidget.OutputsSchema):
         success: bool = Field(description="操作是否成功")
         message: str = Field(description="状态消息")
-        data: Optional[List[Any]] = Field(None, description="下载的数据列表，最新的在前")
-        dates: Optional[List[str]] = Field(None, description="数据对应的日期时间列表，与data列表顺序一致")
+        data: List[Any] = Field([], description="下载的数据列表，最新的在前")
+        dates: List[str] = Field([], description="数据对应的日期时间列表，与data列表顺序一致")
     
     def execute(self, environ, config):
         """
