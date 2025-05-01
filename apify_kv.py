@@ -49,8 +49,8 @@ class ApifyKVStoreWidget(BaseWidget):
                 return {
                     "success": False,
                     "message": "缺少APIFY_API_KEY环境变量，请设置后再试",
-                    "data": None,
-                    "dates": None
+                    "data": [],
+                    "dates": []
                 }
             
             # 创建Apify客户端
@@ -66,8 +66,8 @@ class ApifyKVStoreWidget(BaseWidget):
                     return {
                         "success": False,
                         "message": "上传操作需要提供值",
-                        "data": None,
-                        "dates": None
+                        "data": [],
+                        "dates": []
                     }
                 
                 # 使用当前时间戳作为键
@@ -119,8 +119,8 @@ class ApifyKVStoreWidget(BaseWidget):
                 return {
                     "success": False,
                     "message": f"不支持的操作类型: {config.operation}",
-                    "data": None,
-                    "dates": None
+                    "data": [],
+                    "dates": []
                 }
                 
         except Exception as e:
@@ -129,8 +129,8 @@ class ApifyKVStoreWidget(BaseWidget):
             return {
                 "success": False,
                 "message": f"操作失败: {repr(e)}",
-                "data": None,
-                "dates": None
+                "data": [],
+                "dates": []
             }
 
 
