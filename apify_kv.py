@@ -20,7 +20,7 @@ class ApifyKVStoreWidget(BaseWidget):
     class InputsSchema(BaseWidget.InputsSchema):
         operation: str = Field("download", description="操作类型 (upload/download)")
         store_name: str = Field("default-store", description="KV存储名称")
-        value: str = Field(None, description="上传时的值（字符串）")
+        value: str = Field("", description="上传时的值（字符串）")
         max_items: int = Field(10, description="下载时返回的最大项目数")
         
     class OutputsSchema(BaseWidget.OutputsSchema):
